@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
-import 'dart:async';
+import 'dart:convert';
 
+import 'package:agent_dart/utils/number.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:p256/p256.dart';
 
@@ -9,43 +10,24 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
   final _p256Plugin = P256();
 
-  @override
-  void initState() {
-    super.initState();
-    initPlatformState();
-  }
+  String _publicKey = 'Unknown';
+  String _signed = 'Unknown';
+  bool? _verified;
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    // We also handle the message potentially returning null.
-    try {
-      platformVersion =
-          await _p256Plugin.getPlatformVersion() ?? 'Unknown platform version';
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
+  String get alias => 'test_alias';
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
-  }
+  String get verifyPayload => 'Hello world';
+  String get verifyPublicKey => '3059301306072a8648ce3d020106082a8648ce3d03010703420004ea9970fb9b05e8ac249bfb4ca53896f6ace37174ae89a3ed24d5593f9150d1f3821ec2a36109678c7f2362b0d7c16349408baaa342c67061a1c3b06ed1609426';
+  String get verifySignature => '3045022100ab4f14025772c2b95343851ef95c3cffc764dc08d67074857577b6dd39c9be5b02207ec21f8985eb52a0bbc7094fde49991a4daece57d69e4082c2336cb1c7db1f7b';
 
   @override
   Widget build(BuildContext context) {
@@ -54,8 +36,47 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: const Text('Plugin example app'),
         ),
-        body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+        body: ListView(
+          children: [
+            SelectableText('getPublicKey: $_publicKey\n'),
+            SelectableText('sign: $_signed\n'),
+            SelectableText('verify: $_verified\n'),
+            ElevatedButton(
+              onPressed: () {
+                _p256Plugin.getPublicKey(alias).then((r) => setState(() {
+                      _publicKey = bytesToHex(r);
+                    }));
+              },
+              child: const Text('getPublicKey'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _p256Plugin
+                    .sign(
+                      alias,
+                      Uint8List.fromList(utf8.encode('Hello world')),
+                    )
+                    .then((r) => setState(() {
+                          _signed = bytesToHex(r);
+                        }));
+              },
+              child: const Text('Sign'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _p256Plugin
+                    .verify(
+                      Uint8List.fromList(utf8.encode(verifyPayload)),
+                      Uint8List.fromList(utf8.encode(verifyPublicKey)),
+                      Uint8List.fromList(utf8.encode(verifySignature)),
+                    )
+                    .then((r) => setState(() {
+                          _verified = r;
+                        }));
+              },
+              child: const Text('verify'),
+            ),
+          ],
         ),
       ),
     );
