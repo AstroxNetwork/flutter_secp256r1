@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'p256_platform_interface.dart';
 import 'src/constants.dart';
 
-/// An implementation of [P256Platform] that uses method channels.
-class MethodChannelP256 extends P256Platform {
+/// An implementation of [SecureP256Platform] that uses method channels.
+class SecureP256Channel extends SecureP256Platform {
   /// The method channel used to interact with the native platform.
   @visibleForTesting
-  final methodChannel = const MethodChannel('p256');
+  final methodChannel = const MethodChannel('astrox_secure_p256_plugin');
 
   @override
   Future<Uint8List> getPublicKey(String tag) async {

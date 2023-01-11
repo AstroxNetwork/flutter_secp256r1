@@ -1,4 +1,4 @@
-group 'com.example.p256'
+group 'com.astrox.secure_p256_plugin'
 version '1.0-SNAPSHOT'
 
 buildscript {

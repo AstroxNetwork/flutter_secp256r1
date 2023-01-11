@@ -16,8 +16,8 @@ import java.security.spec.EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
 
 
-/** P256Plugin */
-class P256Plugin : FlutterPlugin, MethodCallHandler {
+/** SecureP256Plugin */
+class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
     private lateinit var channel: MethodChannel
     private val storeProvider: String = "AndroidKeyStore"
     private val signatureAlgorithm: String = "SHA256withECDSA"
@@ -25,7 +25,7 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         applicationContext = flutterPluginBinding.applicationContext
-        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "p256")
+        channel = MethodChannel(flutterPluginBinding.binaryMessenger, "astrox_secure_p256_plugin")
         channel.setMethodCallHandler(this)
     }
 
