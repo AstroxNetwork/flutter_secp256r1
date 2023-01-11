@@ -18,9 +18,12 @@ import java.security.spec.X509EncodedKeySpec
 
 /** SecureP256Plugin */
 class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
+    companion object {
+        const val storeProvider: String = "AndroidKeyStore"
+        const val signatureAlgorithm: String = "SHA256withECDSA"
+    }
+
     private lateinit var channel: MethodChannel
-    private val storeProvider: String = "AndroidKeyStore"
-    private val signatureAlgorithm: String = "SHA256withECDSA"
     private var applicationContext: Context? = null
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -47,24 +50,26 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
                     val alias = call.argument<String>("tag")!!
                     val payload = call.argument<ByteArray>("payload")!!
                     val privateKey = getPublicKeyFromAlias(alias, throwIfNotExists = true).private
-                    val signing = Signature.getInstance(signatureAlgorithm)
-                    signing.initSign(privateKey)
-                    signing.update(payload)
-                    val signature = signing.sign()
+                    val signature = Signature.getInstance(signatureAlgorithm).run {
+                        initSign(privateKey)
+                        update(payload)
+                        sign()
+                    }
                     result.success(signature)
                 }
 
                 "verify" -> {
                     val cPayload = call.argument<ByteArray>("payload")!!
-                    val cSignature = call.argument<ByteArray>("signature")!!
                     val cPublicKey = call.argument<ByteArray>("publicKey")!!
-                    val verifying = Signature.getInstance(signatureAlgorithm)
-                    val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(cPublicKey)
-                    val kf = KeyFactory.getInstance("EC")
-                    val publicKey = kf.generatePublic(publicKeySpec)
-                    verifying.initVerify(publicKey)
-                    verifying.update(cPayload)
-                    val verifyResult = verifying.verify(cSignature)
+                    val cSignature = call.argument<ByteArray>("signature")!!
+                    val verifyResult = Signature.getInstance(signatureAlgorithm).run {
+                        val kf = KeyFactory.getInstance("EC")
+                        val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(cPublicKey)
+                        val publicKey = kf.generatePublic(publicKeySpec)
+                        initVerify(publicKey)
+                        update(cPayload)
+                        verify(cSignature)
+                    }
                     result.success(verifyResult)
                 }
 
@@ -98,14 +103,13 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
             val kpg: KeyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, storeProvider)
             val parameterSpec = KeyGenParameterSpec.Builder(
                 alias, KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
-            ).run {
+            ).apply {
                 setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
                 setDigests(KeyProperties.DIGEST_SHA256)
                 if (hasStrongBox() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     setIsStrongBoxBacked(true)
                 }
-                build()
-            }
+            }.build()
             kpg.initialize(parameterSpec)
             kpg.generateKeyPair()
         }
