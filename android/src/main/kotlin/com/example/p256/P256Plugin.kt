@@ -72,7 +72,7 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
                 else -> rw.notImplemented()
             }
         } catch (e: Throwable) {
-            rw.error(e.javaClass.name, e.message, e.stackTrace)
+            rw.error(e.javaClass.name, e.message, e.stackTrace.toString())
         }
     }
 
