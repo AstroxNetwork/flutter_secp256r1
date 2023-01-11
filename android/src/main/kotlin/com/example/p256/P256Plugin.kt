@@ -22,13 +22,6 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
     private val storeProvider: String = "AndroidKeyStore"
     private val signatureAlgorithm: String = "SHA256withECDSA"
     private var applicationContext: Context? = null
-    private val oidP256 = byteArrayOf(
-        0x30, 0x13,
-        0x06, 0x07,
-        0x2a, 0x86.toByte(), 0x48, 0xce.toByte(), 0x3d, 0x02, 0x01,
-        0x06, 0x08,
-        0x2a, 0x86.toByte(), 0x48, 0xce.toByte(), 0x3d, 0x03, 0x01, 0x07,
-    )
 
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         applicationContext = flutterPluginBinding.applicationContext
@@ -55,13 +48,9 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
                     val alias = call.argument<String>("tag")!!
                     val payload = call.argument<ByteArray>("payload")!!
                     val privateKey = getPublicKeyFromAlias(alias, throwIfNotExists = true).private
-                    val id = oidP256
-                    val idHashedMessage = ByteArray(id.size + payload.size)
-                    System.arraycopy(id, 0, idHashedMessage, 0, id.size)
-                    System.arraycopy(payload, 0, idHashedMessage, id.size, payload.size)
                     val signing = Signature.getInstance(signatureAlgorithm)
                     signing.initSign(privateKey)
-                    signing.update(idHashedMessage)
+                    signing.update(payload)
                     val signature = signing.sign()
                     rw.success(signature)
                 }
@@ -83,7 +72,7 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
                 else -> rw.notImplemented()
             }
         } catch (e: Throwable) {
-            rw.error(e.javaClass.name, e.message, e.cause)
+            rw.error(e.javaClass.name, e.message, e.stackTrace)
         }
     }
 
@@ -112,11 +101,7 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
                 alias, KeyProperties.PURPOSE_SIGN or KeyProperties.PURPOSE_VERIFY
             ).run {
                 setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
-                setDigests(
-                    KeyProperties.DIGEST_SHA256,
-                    KeyProperties.DIGEST_SHA384,
-                    KeyProperties.DIGEST_SHA512
-                )
+                setDigests(KeyProperties.DIGEST_SHA256)
                 if (hasStrongBox() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     setIsStrongBoxBacked(true)
                 }
