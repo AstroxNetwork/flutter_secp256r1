@@ -35,13 +35,12 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
     }
 
     override fun onMethodCall(call: MethodCall, result: Result) {
-        val rw = ResultWrapper(result)
         try {
             when (call.method) {
                 "getPublicKey" -> {
                     val alias = call.argument<String>("tag")!!
                     val keyPair = getPublicKeyFromAlias(alias)
-                    rw.success(keyPair.public.encoded)
+                    result.success(keyPair.public.encoded)
                 }
 
                 "sign" -> {
@@ -52,7 +51,7 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
                     signing.initSign(privateKey)
                     signing.update(payload)
                     val signature = signing.sign()
-                    rw.success(signature)
+                    result.success(signature)
                 }
 
                 "verify" -> {
@@ -66,13 +65,13 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
                     verifying.initVerify(publicKey)
                     verifying.update(cPayload)
                     val verifyResult = verifying.verify(cSignature)
-                    rw.success(verifyResult)
+                    result.success(verifyResult)
                 }
 
-                else -> rw.notImplemented()
+                else -> result.notImplemented()
             }
         } catch (e: Throwable) {
-            rw.error(e.javaClass.name, e.message, e.stackTrace.toString())
+            result.error(e.javaClass.name, e.message, e.stackTrace.toString())
         }
     }
 
@@ -111,33 +110,5 @@ class P256Plugin : FlutterPlugin, MethodCallHandler {
             kpg.generateKeyPair()
         }
         return keyPair
-    }
-
-    private class ResultWrapper(val r: Result) {
-        private var isReplied: Boolean = false
-
-        fun success(result: Any?) {
-            if (isReplied) {
-                return
-            }
-            isReplied = true
-            r.success(result)
-        }
-
-        fun error(errorCode: String, errorMessage: String?, errorDetails: Any?) {
-            if (isReplied) {
-                return
-            }
-            isReplied = true
-            r.error(errorCode, errorMessage, errorDetails)
-        }
-
-        fun notImplemented() {
-            if (isReplied) {
-                return
-            }
-            isReplied = true
-            r.notImplemented()
-        }
     }
 }
