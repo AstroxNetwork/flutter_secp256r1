@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
-import 'package:agent_dart/utils/number.dart';
+import 'package:agent_dart/identity/p256.dart';
+import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:p256/p256.dart';
 
 void main() {
@@ -17,17 +18,19 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _p256Plugin = P256();
+  final _p256Plugin = SecureP256();
 
   String _publicKey = 'Unknown';
   String _signed = 'Unknown';
   bool? _verified;
 
+  final _payloadController = TextEditingController(
+    text: 'Hello world',
+  );
+
   String get alias => 'test_alias';
 
-  String get verifyPayload => 'Hello world';
-  String get verifyPublicKey => '3059301306072a8648ce3d020106082a8648ce3d03010703420004ea9970fb9b05e8ac249bfb4ca53896f6ace37174ae89a3ed24d5593f9150d1f3821ec2a36109678c7f2362b0d7c16349408baaa342c67061a1c3b06ed1609426';
-  String get verifySignature => '3045022100ab4f14025772c2b95343851ef95c3cffc764dc08d67074857577b6dd39c9be5b02207ec21f8985eb52a0bbc7094fde49991a4daece57d69e4082c2336cb1c7db1f7b';
+  String get _verifyPayload => _payloadController.text;
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +44,21 @@ class _MyAppState extends State<MyApp> {
             SelectableText('getPublicKey: $_publicKey\n'),
             SelectableText('sign: $_signed\n'),
             SelectableText('verify: $_verified\n'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: TextField(
+                controller: _payloadController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Enter a search term',
+                ),
+              ),
+            ),
             ElevatedButton(
               onPressed: () {
-                _p256Plugin.getPublicKey(alias).then((r) => setState(() {
-                      _publicKey = bytesToHex(r);
-                    }));
+                _p256Plugin.getPublicKey(alias).then(
+                      (r) => setState(() => _publicKey = hex.encode(r.rawKey)),
+                    );
               },
               child: const Text('getPublicKey'),
             ),
@@ -54,11 +67,9 @@ class _MyAppState extends State<MyApp> {
                 _p256Plugin
                     .sign(
                       alias,
-                      Uint8List.fromList(utf8.encode('Hello world')),
+                      Uint8List.fromList(utf8.encode(_verifyPayload)),
                     )
-                    .then((r) => setState(() {
-                          _signed = bytesToHex(r);
-                        }));
+                    .then((r) => setState(() => _signed = hex.encode(r)));
               },
               child: const Text('Sign'),
             ),
@@ -66,13 +77,13 @@ class _MyAppState extends State<MyApp> {
               onPressed: () {
                 _p256Plugin
                     .verify(
-                      Uint8List.fromList(utf8.encode(verifyPayload)),
-                      Uint8List.fromList(utf8.encode(verifyPublicKey)),
-                      Uint8List.fromList(utf8.encode(verifySignature)),
+                      Uint8List.fromList(utf8.encode(_verifyPayload)),
+                      P256PublicKey.fromRaw(
+                        Uint8List.fromList(hex.decode(_publicKey)),
+                      ),
+                      Uint8List.fromList(hex.decode(_signed)),
                     )
-                    .then((r) => setState(() {
-                          _verified = r;
-                        }));
+                    .then((r) => setState(() => _verified = r));
               },
               child: const Text('verify'),
             ),
