@@ -1,4 +1,4 @@
-package com.example.p256
+package com.astrox.secure_p256_plugin
 
 import android.content.Context
 import android.content.pm.PackageManager
