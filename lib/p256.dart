@@ -30,9 +30,16 @@ class SecureP256 {
     P256PublicKey publicKey,
     Uint8List signature,
   ) {
+    Uint8List rawKey = publicKey.rawKey;
+    if (!isDerPublicKey(rawKey, oidP256)) {
+      rawKey = bytesWrapDer(rawKey, oidP256);
+    }
+    if (!isDerSignature(signature)) {
+      signature = bytesWrapDerSignature(signature);
+    }
     return SecureP256Platform.instance.verify(
       payload,
-      publicKey.rawKey,
+      rawKey,
       signature,
     );
   }
