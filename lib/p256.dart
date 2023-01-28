@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'dart:typed_data';
 
 import 'package:agent_dart/identity/der.dart';
@@ -31,7 +32,7 @@ class SecureP256 {
     Uint8List signature,
   ) {
     Uint8List rawKey = publicKey.rawKey;
-    if (!isDerPublicKey(rawKey, oidP256)) {
+    if (Platform.isAndroid && !isDerPublicKey(rawKey, oidP256)) {
       rawKey = bytesWrapDer(rawKey, oidP256);
     }
     if (!isDerSignature(signature)) {
