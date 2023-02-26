@@ -3,10 +3,10 @@ import Flutter
 import LocalAuthentication
 import UIKit
 
-public class SwiftP256Plugin: NSObject, FlutterPlugin {
+public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "astrox_secure_p256_plugin", binaryMessenger: registrar.messenger())
-        let instance = SwiftP256Plugin()
+        let instance = SwiftSecureP256Plugin()
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     

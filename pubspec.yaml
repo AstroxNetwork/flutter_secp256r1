@@ -1,7 +1,8 @@
 name: secp256r1
-description: A new Flutter plugin project.
+description: >
+  A Flutter plugin that support secp256r1 by Keystore on Android and Secure Enclave on iOS.
 version: 0.1.0-dev.1
-repository: https://github.com/AstroxNetwork/p256
+repository: https://github.com/AstroxNetwork/flutter_secp256r1
 
 environment:
   sdk: '>=2.13.0 <3.0.0'
@@ -15,7 +16,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^2.0.0
+  flutter_lints: any
 
 flutter:
   plugin:
@@ -24,4 +25,4 @@ flutter:
         package: com.astrox.secure_p256_plugin
         pluginClass: SecureP256Plugin
       ios:
-        pluginClass: P256Plugin
+        pluginClass: SecureP256Plugin
