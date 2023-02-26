@@ -6,6 +6,7 @@ repository: https://github.com/AstroxNetwork/flutter_secp256r1
 
 environment:
   sdk: '>=2.13.0 <3.0.0'
+  flutter: '>=2.0.0'
 
 dependencies:
   flutter:
