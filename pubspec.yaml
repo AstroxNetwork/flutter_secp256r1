@@ -1,4 +1,4 @@
-name: p256
+name: secp256r1
 description: A new Flutter plugin project.
 version: 0.1.0-dev.1
 repository: https://github.com/AstroxNetwork/p256
@@ -9,11 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-#  agent_dart: ^1.0.0-0
-  agent_dart:
-    git:
-      url: https://github.com/AstroxNetwork/agent_dart
-      ref: feat/signer+der
+  agent_dart: ^1.0.0-dev.8
   plugin_platform_interface: ^2.0.2
 
 dev_dependencies:

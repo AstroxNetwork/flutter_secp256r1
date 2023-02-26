@@ -1,3 +1,3 @@
-## 0.0.1
+## 0.1.0-dev.1
 
-* TODO: Describe initial release.
+* Support secp256r1 on Android and iOS.

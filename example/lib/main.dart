@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:agent_dart/identity/p256.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
-import 'package:p256/p256.dart';
+import 'package:secp256r1/secp256r1.dart';
 
 void main() {
   runApp(const MyApp());

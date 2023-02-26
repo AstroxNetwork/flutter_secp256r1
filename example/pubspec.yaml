@@ -9,7 +9,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  p256:
+  secp256r1:
     path: ../
 
   agent_dart: ^1.0.0-0
@@ -23,9 +23,7 @@ dev_dependencies:
 
 dependency_overrides:
   agent_dart:
-    git:
-      url: https://github.com/AstroxNetwork/agent_dart
-      ref: feat/signer+der
+    path: ../../agent_dart
 
 flutter:
   uses-material-design: true
