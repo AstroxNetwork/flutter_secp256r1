@@ -23,6 +23,9 @@ class _MyAppState extends State<MyApp> {
   String _publicKey = 'Unknown';
   String _signed = 'Unknown';
   bool? _verified;
+  String? _sharedSecret;
+
+  String get _exchangePublicKey => '';
 
   final _payloadController = TextEditingController(
     text: 'Hello world',
@@ -44,6 +47,7 @@ class _MyAppState extends State<MyApp> {
             SelectableText('getPublicKey: $_publicKey\n'),
             SelectableText('sign: $_signed\n'),
             SelectableText('verify: $_verified\n'),
+            SelectableText('sharedSecret: $_sharedSecret\n'),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               child: TextField(
@@ -71,7 +75,7 @@ class _MyAppState extends State<MyApp> {
                     )
                     .then((r) => setState(() => _signed = hex.encode(r)));
               },
-              child: const Text('Sign'),
+              child: const Text('sign'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -86,6 +90,19 @@ class _MyAppState extends State<MyApp> {
                     .then((r) => setState(() => _verified = r));
               },
               child: const Text('verify'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _p256Plugin
+                    .getSharedSecret(
+                      alias,
+                      P256PublicKey.fromRaw(
+                        Uint8List.fromList(hex.decode(_exchangePublicKey)),
+                      ),
+                    )
+                    .then((r) => setState(() => _sharedSecret = hex.encode(r)));
+              },
+              child: const Text('getSharedSecret'),
             ),
           ],
         ),
