@@ -83,7 +83,7 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
     
     func generateKeyPair(tag: String, password: String?) throws -> SecKey {
         let tagData = tag.data(using: .utf8)
-        let flags: SecAccessControlCreateFlags = [.privateKeyUsage, .biometryCurrentSet]
+        let flags: SecAccessControlCreateFlags = [.privateKeyUsage]
         var accessError: Unmanaged<CFError>?
         let accessControl = SecAccessControlCreateWithFlags(
             kCFAllocatorDefault,
