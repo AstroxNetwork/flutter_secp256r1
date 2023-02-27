@@ -1,5 +1,5 @@
 #import "SecureP256Plugin.h"
-#if __has_include(<p256/p256-Swift.h>)
+#if __has_include(<secp256r1/secp256r1-Swift.h>)
 #import <secp256r1/secp256r1-Swift.h>
 #else
 // Support project import fallback if the generated compatibility header
@@ -10,6 +10,6 @@
 
 @implementation SecureP256Plugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftP256Plugin registerWithRegistrar:registrar];
+    [SwiftSecureP256Plugin registerWithRegistrar:registrar];
 }
 @end

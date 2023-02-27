@@ -12,57 +12,57 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
-            case "getPublicKey":
-                do {
-                    let param = call.arguments as? Dictionary<String, Any>
-                    let tag = param!["tag"] as! String
-                    var password : String? = nil
-                    if let pwd = param!["password"] as? String {
-                        password = pwd
-                    }
-
-                    let key = try getPublicKey(tag: tag, password: password)!
-                    result(FlutterStandardTypedData(bytes: key))
-                } catch {
-                    result(FlutterError(code: "getPublicKey", message: error.localizedDescription, details: "\(error)"))
+        case "getPublicKey":
+            do {
+                let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String
+                var password : String? = nil
+                if let pwd = param!["password"] as? String {
+                    password = pwd
                 }
-            case "sign" :
-                do {
-                    let param = call.arguments as? Dictionary<String, Any>
-                    let tag = param!["tag"] as! String
-                    let message = param!["payload"] as! FlutterStandardTypedData
-                    var password : String? = nil
-                    if let pwd = param!["password"] as? String {
-                        password = pwd
-                    }
-
-                    let signature = try sign(
-                        tag: tag,
-                        password: password,
-                        message: message.data
-                    )!
-                    result(FlutterStandardTypedData(bytes: signature))
-                } catch {
-                    result(FlutterError(code: "sign", message: error.localizedDescription, details: "\(error)"))
+                
+                let key = try getPublicKey(tag: tag, password: password)!
+                result(FlutterStandardTypedData(bytes: key))
+            } catch {
+                result(FlutterError(code: "getPublicKey", message: error.localizedDescription, details: "\(error)"))
+            }
+        case "sign" :
+            do {
+                let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String
+                let message = param!["payload"] as! FlutterStandardTypedData
+                var password : String? = nil
+                if let pwd = param!["password"] as? String {
+                    password = pwd
                 }
-            case "verify" :
-                do {
-                    let param = call.arguments as? Dictionary<String, Any>
-                    let payload = (param!["payload"] as! FlutterStandardTypedData).data
-                    let publicKey = (param!["publicKey"] as! FlutterStandardTypedData).data
-                    let signature = (param!["signature"] as! FlutterStandardTypedData).data
-                    let verified = try verify(
-                        payload: payload,
-                        publicKey: publicKey,
-                        signature: signature
-                    )
-
-                    result(verified)
-                } catch {
-                    result(FlutterError(code: "verify", message: error.localizedDescription, details: "\(error)"))
-                }
-            default:
-                result(FlutterMethodNotImplemented)
+                
+                let signature = try sign(
+                    tag: tag,
+                    password: password,
+                    message: message.data
+                )!
+                result(FlutterStandardTypedData(bytes: signature))
+            } catch {
+                result(FlutterError(code: "sign", message: error.localizedDescription, details: "\(error)"))
+            }
+        case "verify" :
+            do {
+                let param = call.arguments as? Dictionary<String, Any>
+                let payload = (param!["payload"] as! FlutterStandardTypedData).data
+                let publicKey = (param!["publicKey"] as! FlutterStandardTypedData).data
+                let signature = (param!["signature"] as! FlutterStandardTypedData).data
+                let verified = try verify(
+                    payload: payload,
+                    publicKey: publicKey,
+                    signature: signature
+                )
+                
+                result(verified)
+            } catch {
+                result(FlutterError(code: "verify", message: error.localizedDescription, details: "\(error)"))
+            }
+        default:
+            result(FlutterMethodNotImplemented)
         }
     }
     
@@ -120,8 +120,8 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
     }
     
     func getPublicKey(tag: String, password: String?) throws -> Data? {
-        let secKey : SecKey
-        let publicKey : SecKey
+        let secKey: SecKey
+        let publicKey: SecKey
         
         do {
             if isKeyCreated(tag: tag, password: password) {
@@ -143,7 +143,7 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
     }
     
     func sign(tag: String, password: String?, message: Data) throws -> Data? {
-        let secKey : SecKey
+        let secKey: SecKey
         do {
             secKey = try getSecKey(tag: tag, password: password)!
         } catch {
