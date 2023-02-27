@@ -44,4 +44,12 @@ class SecureP256 {
       signature,
     );
   }
+
+  Future<Uint8List> getSharedSecret(String tag, P256PublicKey publicKey) {
+    Uint8List rawKey = publicKey.rawKey;
+    if (Platform.isAndroid && !isDerPublicKey(rawKey, oidP256)) {
+      rawKey = bytesWrapDer(rawKey, oidP256);
+    }
+    return SecureP256Platform.instance.getSharedSecret(tag, rawKey);
+  }
 }

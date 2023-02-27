@@ -44,4 +44,13 @@ class SecureP256Channel extends SecureP256Platform {
     );
     return result ?? false;
   }
+
+  @override
+  Future<Uint8List> getSharedSecret(String tag, Uint8List publicKey) async {
+    final result = await methodChannel.invokeMethod(
+      Methods.getSharedSecret,
+      {'tag': tag, 'publicKey': publicKey},
+    );
+    return result;
+  }
 }
