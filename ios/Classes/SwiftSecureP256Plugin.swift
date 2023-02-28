@@ -26,11 +26,11 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
             } catch {
                 result(FlutterError(code: "getPublicKey", message: error.localizedDescription, details: "\(error)"))
             }
-        case "sign" :
+        case "sign":
             do {
                 let param = call.arguments as? Dictionary<String, Any>
                 let tag = param!["tag"] as! String
-                let message = param!["payload"] as! FlutterStandardTypedData
+                let payload = (param!["payload"] as! FlutterStandardTypedData).data
                 var password : String? = nil
                 if let pwd = param!["password"] as? String {
                     password = pwd
@@ -39,13 +39,13 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
                 let signature = try sign(
                     tag: tag,
                     password: password,
-                    message: message.data
+                    payload: payload
                 )!
                 result(FlutterStandardTypedData(bytes: signature))
             } catch {
                 result(FlutterError(code: "sign", message: error.localizedDescription, details: "\(error)"))
             }
-        case "verify" :
+        case "verify":
             do {
                 let param = call.arguments as? Dictionary<String, Any>
                 let payload = (param!["payload"] as! FlutterStandardTypedData).data
@@ -60,6 +60,21 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
                 result(verified)
             } catch {
                 result(FlutterError(code: "verify", message: error.localizedDescription, details: "\(error)"))
+            }
+        case "getSharedSecret":
+            do {
+                let param = call.arguments as? Dictionary<String, Any>
+                let tag = param!["tag"] as! String
+                let publicKeyData = (param!["publicKey"] as! FlutterStandardTypedData).data
+                var password : String? = nil
+                if let pwd = param!["password"] as? String {
+                    password = pwd
+                }
+                
+                let sharedSecret = try getSharedSecret(tag: tag, password: password, publicKeyData: publicKeyData)!
+                result(FlutterStandardTypedData(bytes: sharedSecret))
+            } catch {
+                result(FlutterError(code: "getSharedSecret", message: error.localizedDescription, details: "\(error)"))
             }
         default:
             result(FlutterMethodNotImplemented)
@@ -93,9 +108,11 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
                     kSecAttrAccessControl as String     : accessControl!
                 ]
             ]
-            if TARGET_OS_SIMULATOR != 0 {
-                parameterTemp[kSecAttrTokenID as String] = kSecAttrTokenIDSecureEnclave
-            }
+            #if targetEnvironment(simulator)
+            #else
+              parameterTemp[kSecAttrTokenID as String] = kSecAttrTokenIDSecureEnclave
+            #endif
+            
             if flags.contains(.applicationPassword) {
                 let context = LAContext()
                 var newPassword : Data?
@@ -142,7 +159,7 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
         }
     }
     
-    func sign(tag: String, password: String?, message: Data) throws -> Data? {
+    func sign(tag: String, password: String?, payload: Data) throws -> Data? {
         let secKey: SecKey
         do {
             secKey = try getSecKey(tag: tag, password: password)!
@@ -154,7 +171,7 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
         guard let signData = SecKeyCreateSignature(
             secKey,
             SecKeyAlgorithm.ecdsaSignatureMessageX962SHA256,
-            message as CFData,
+            payload as CFData,
             &error
         ) else {
             if let e = error {
@@ -187,6 +204,32 @@ public class SwiftSecureP256Plugin: NSObject, FlutterPlugin {
             nil
         )
         return verify
+    }
+    
+    func getSharedSecret(tag: String, password: String?, publicKeyData: Data) throws -> Data? {
+        let secKey: SecKey
+        let publicKey: SecKey
+        let publicKeyAttributes = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeyClass as String: kSecAttrKeyClassPublic
+        ] as CFDictionary
+        
+        var error: Unmanaged<CFError>?
+        do {
+            secKey = try getSecKey(tag: tag, password: password)!
+            publicKey = SecKeyCreateWithData(publicKeyData as CFData, publicKeyAttributes, &error)!
+        } catch {
+            throw error
+        }
+        
+        let sharedSecretData = SecKeyCopyKeyExchangeResult(
+            secKey,
+            SecKeyAlgorithm.ecdhKeyExchangeStandard,
+            publicKey,
+            [:] as CFDictionary,
+            &error
+        ) as Data?
+        return sharedSecretData
     }
     
     internal func getSecKey(tag: String, password: String?) throws -> SecKey?  {

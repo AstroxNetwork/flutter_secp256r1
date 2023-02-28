@@ -5,6 +5,7 @@ import 'package:agent_dart/identity/p256.dart';
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
 import 'package:secp256r1/secp256r1.dart';
+import 'package:tuple/tuple.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,14 +24,15 @@ class _MyAppState extends State<MyApp> {
   String _publicKey = 'Unknown';
   String _signed = 'Unknown';
   bool? _verified;
+  String? _sharedSecret, _decrypted;
+  Tuple2<Uint8List, Uint8List>? _encrypted;
 
-  final _payloadController = TextEditingController(
-    text: 'Hello world',
-  );
+  final _payloadTEC = TextEditingController(text: 'Hello world');
+  final _othersPublicKeyTEC = TextEditingController();
 
   String get alias => 'test_alias';
 
-  String get _verifyPayload => _payloadController.text;
+  String get _verifyPayload => _payloadTEC.text;
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +46,26 @@ class _MyAppState extends State<MyApp> {
             SelectableText('getPublicKey: $_publicKey\n'),
             SelectableText('sign: $_signed\n'),
             SelectableText('verify: $_verified\n'),
+            SelectableText('sharedSecret: $_sharedSecret\n'),
+            SelectableText('encrypted: $_encrypted\n'),
+            SelectableText('decrypted: $_decrypted\n'),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
               child: TextField(
-                controller: _payloadController,
+                controller: _payloadTEC,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: 'Enter a search term',
+                  label: Text('Payload text field'),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+              child: TextField(
+                controller: _othersPublicKeyTEC,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  label: Text('Others Public Key (hex)'),
                 ),
               ),
             ),
@@ -71,7 +86,7 @@ class _MyAppState extends State<MyApp> {
                     )
                     .then((r) => setState(() => _signed = hex.encode(r)));
               },
-              child: const Text('Sign'),
+              child: const Text('sign'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -86,6 +101,48 @@ class _MyAppState extends State<MyApp> {
                     .then((r) => setState(() => _verified = r));
               },
               child: const Text('verify'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _p256Plugin
+                    .getSharedSecret(
+                      alias,
+                      P256PublicKey.fromRaw(
+                        Uint8List.fromList(
+                          hex.decode(_othersPublicKeyTEC.text),
+                        ),
+                      ),
+                    )
+                    .then((r) => setState(() => _sharedSecret = hex.encode(r)));
+              },
+              child: const Text('getSharedSecret'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _p256Plugin
+                    .encrypt(
+                      sharedSecret: Uint8List.fromList(
+                        hex.decode(_sharedSecret!),
+                      ),
+                      message: Uint8List.fromList(utf8.encode('Hello AstroX')),
+                    )
+                    .then((r) => setState(() => _encrypted = r));
+              },
+              child: const Text('Encrypt (FFI)'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                _p256Plugin
+                    .decrypt(
+                      sharedSecret: Uint8List.fromList(
+                        hex.decode(_sharedSecret!),
+                      ),
+                      iv: _encrypted!.item1,
+                      cipher: _encrypted!.item2,
+                    )
+                    .then((r) => setState(() => _decrypted = utf8.decode(r)));
+              },
+              child: const Text('Decrypt (FFI)'),
             ),
           ],
         ),

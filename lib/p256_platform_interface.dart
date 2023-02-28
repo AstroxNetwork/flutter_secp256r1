@@ -40,4 +40,8 @@ abstract class SecureP256Platform extends PlatformInterface {
   ) {
     return _instance.verify(payload, publicKey, signature);
   }
+
+  Future<Uint8List> getSharedSecret(String tag, Uint8List publicKey) {
+    return _instance.getSharedSecret(tag, publicKey);
+  }
 }
