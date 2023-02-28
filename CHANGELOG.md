@@ -2,7 +2,7 @@
 
 ## 0.1.0-dev.3
 
-* Support Shared Secrets using ECDH.
+* Support Encryption, Decryption, and Shared Secrets using ECDH.
 
 ## 0.1.0-dev.2
 
