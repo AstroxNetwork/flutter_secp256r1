@@ -1,0 +1,3 @@
+dependency_overrides:
+  agent_dart:
+    path: ../agent_dart

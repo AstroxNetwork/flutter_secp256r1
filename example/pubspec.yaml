@@ -3,7 +3,8 @@ description: Demonstrates how to use the p256 plugin.
 publish_to: 'none'
 
 environment:
-  sdk: '>=2.13.0 <3.0.0'
+  sdk: '>=2.15.0 <3.0.0'
+  flutter: '>=2.0.0 <3.0.0'
 
 dependencies:
   flutter:
@@ -21,10 +22,6 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: any
-
-dependency_overrides:
-  agent_dart:
-    path: ../../agent_dart
 
 flutter:
   uses-material-design: true
