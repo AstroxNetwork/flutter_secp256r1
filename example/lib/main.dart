@@ -19,8 +19,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  final _p256Plugin = SecureP256();
-
   String _publicKey = 'Unknown';
   String _signed = 'Unknown';
   bool? _verified;
@@ -71,76 +69,66 @@ class _MyAppState extends State<MyApp> {
             ),
             ElevatedButton(
               onPressed: () {
-                _p256Plugin.getPublicKey(alias).then(
-                      (r) => setState(() => _publicKey = hex.encode(r.rawKey)),
-                    );
+                SecureP256.getPublicKey(alias).then(
+                  (r) => setState(() => _publicKey = hex.encode(r.rawKey)),
+                );
               },
               child: const Text('getPublicKey'),
             ),
             ElevatedButton(
               onPressed: () {
-                _p256Plugin
-                    .sign(
-                      alias,
-                      Uint8List.fromList(utf8.encode(_verifyPayload)),
-                    )
-                    .then((r) => setState(() => _signed = hex.encode(r)));
+                SecureP256.sign(
+                  alias,
+                  Uint8List.fromList(utf8.encode(_verifyPayload)),
+                ).then((r) => setState(() => _signed = hex.encode(r)));
               },
               child: const Text('sign'),
             ),
             ElevatedButton(
               onPressed: () {
-                _p256Plugin
-                    .verify(
-                      Uint8List.fromList(utf8.encode(_verifyPayload)),
-                      P256PublicKey.fromRaw(
-                        Uint8List.fromList(hex.decode(_publicKey)),
-                      ),
-                      Uint8List.fromList(hex.decode(_signed)),
-                    )
-                    .then((r) => setState(() => _verified = r));
+                SecureP256.verify(
+                  Uint8List.fromList(utf8.encode(_verifyPayload)),
+                  P256PublicKey.fromRaw(
+                    Uint8List.fromList(hex.decode(_publicKey)),
+                  ),
+                  Uint8List.fromList(hex.decode(_signed)),
+                ).then((r) => setState(() => _verified = r));
               },
               child: const Text('verify'),
             ),
             ElevatedButton(
               onPressed: () {
-                _p256Plugin
-                    .getSharedSecret(
-                      alias,
-                      P256PublicKey.fromRaw(
-                        Uint8List.fromList(
-                          hex.decode(_othersPublicKeyTEC.text),
-                        ),
-                      ),
-                    )
-                    .then((r) => setState(() => _sharedSecret = hex.encode(r)));
+                SecureP256.getSharedSecret(
+                  alias,
+                  P256PublicKey.fromRaw(
+                    Uint8List.fromList(
+                      hex.decode(_othersPublicKeyTEC.text),
+                    ),
+                  ),
+                ).then((r) => setState(() => _sharedSecret = hex.encode(r)));
               },
               child: const Text('getSharedSecret'),
             ),
             ElevatedButton(
               onPressed: () {
-                _p256Plugin
-                    .encrypt(
-                      sharedSecret: Uint8List.fromList(
-                        hex.decode(_sharedSecret!),
-                      ),
-                      message: Uint8List.fromList(utf8.encode('Hello AstroX')),
-                    )
-                    .then((r) => setState(() => _encrypted = r));
+                SecureP256.encrypt(
+                  sharedSecret: Uint8List.fromList(
+                    hex.decode(_sharedSecret!),
+                  ),
+                  message: Uint8List.fromList(utf8.encode('Hello AstroX')),
+                ).then((r) => setState(() => _encrypted = r));
               },
               child: const Text('Encrypt (FFI)'),
             ),
             ElevatedButton(
               onPressed: () {
-                _p256Plugin
-                    .decrypt(
-                      sharedSecret: Uint8List.fromList(
-                        hex.decode(_sharedSecret!),
-                      ),
-                      iv: _encrypted!.item1,
-                      cipher: _encrypted!.item2,
-                    )
-                    .then((r) => setState(() => _decrypted = utf8.decode(r)));
+                SecureP256.decrypt(
+                  sharedSecret: Uint8List.fromList(
+                    hex.decode(_sharedSecret!),
+                  ),
+                  iv: _encrypted!.item1,
+                  cipher: _encrypted!.item2,
+                ).then((r) => setState(() => _decrypted = utf8.decode(r)));
               },
               child: const Text('Decrypt (FFI)'),
             ),

@@ -10,7 +10,9 @@ import 'package:tuple/tuple.dart';
 import 'p256_platform_interface.dart';
 
 class SecureP256 {
-  Future<P256PublicKey> getPublicKey(String tag) async {
+  const SecureP256._();
+
+  static Future<P256PublicKey> getPublicKey(String tag) async {
     assert(tag.isNotEmpty);
     final raw = await SecureP256Platform.instance.getPublicKey(tag);
     // ECDSA starts with 0x04 and 65 length.
@@ -21,7 +23,7 @@ class SecureP256 {
     }
   }
 
-  Future<Uint8List> sign(String tag, Uint8List payload) async {
+  static Future<Uint8List> sign(String tag, Uint8List payload) async {
     assert(tag.isNotEmpty);
     assert(payload.isNotEmpty);
     final signature = await SecureP256Platform.instance.sign(tag, payload);
@@ -32,7 +34,7 @@ class SecureP256 {
     }
   }
 
-  Future<bool> verify(
+  static Future<bool> verify(
     Uint8List payload,
     P256PublicKey publicKey,
     Uint8List signature,
@@ -53,7 +55,8 @@ class SecureP256 {
     );
   }
 
-  Future<Uint8List> getSharedSecret(String tag, P256PublicKey publicKey) {
+  static Future<Uint8List> getSharedSecret(
+      String tag, P256PublicKey publicKey) {
     assert(tag.isNotEmpty);
     Uint8List rawKey = publicKey.rawKey;
     if (Platform.isAndroid && !isDerPublicKey(rawKey, oidP256)) {
@@ -63,7 +66,7 @@ class SecureP256 {
   }
 
   /// Return [iv, cipher].
-  Future<Tuple2<Uint8List, Uint8List>> encrypt({
+  static Future<Tuple2<Uint8List, Uint8List>> encrypt({
     required Uint8List sharedSecret,
     required Uint8List message,
   }) async {
@@ -81,7 +84,7 @@ class SecureP256 {
     return Tuple2(iv, cipher);
   }
 
-  Future<Uint8List> decrypt({
+  static Future<Uint8List> decrypt({
     required Uint8List sharedSecret,
     required Uint8List iv,
     required Uint8List cipher,
