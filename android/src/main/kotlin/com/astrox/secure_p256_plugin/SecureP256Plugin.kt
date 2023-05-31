@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import org.conscrypt.Conscrypt
 import java.security.*
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.EncodedKeySpec
@@ -22,6 +23,11 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
     companion object {
         const val storeProvider: String = "AndroidKeyStore"
         const val signatureAlgorithm: String = "SHA256withECDSA"
+    }
+
+    init {
+        Security.removeProvider("BC")
+        Security.insertProviderAt(Conscrypt.newProvider(), 1)
     }
 
     private lateinit var channel: MethodChannel
@@ -119,7 +125,8 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
         } else if (throwIfNotExists) {
             throw KeyStoreException("No key was found with the alias $alias.")
         } else {
-            val kpg: KeyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, storeProvider)
+            val kpg: KeyPairGenerator =
+                KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, storeProvider)
             var properties = KeyProperties.PURPOSE_ENCRYPT or
                     KeyProperties.PURPOSE_DECRYPT or
                     KeyProperties.PURPOSE_SIGN or
