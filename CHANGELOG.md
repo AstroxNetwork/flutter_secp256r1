@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.0-dev.5
+
+* Use `ConscryptProvider`
+
 ## 0.1.0-dev.4
 
 * Make methods static.
