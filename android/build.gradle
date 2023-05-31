@@ -2,7 +2,7 @@ group 'com.astrox.secure_p256_plugin'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.21'
+    ext.kotlin_version = '1.8.10'
     repositories {
         google()
         mavenCentral()
@@ -46,5 +46,7 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha04'
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.10"))
+    implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha06'
+    implementation 'org.conscrypt:conscrypt-android:2.5.2'
 }
