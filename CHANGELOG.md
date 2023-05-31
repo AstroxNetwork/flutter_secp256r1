@@ -2,7 +2,7 @@
 
 ## 0.1.0-dev.5
 
-* Use `ConscryptProvider`
+* Use `ConscryptProvider`.
 
 ## 0.1.0-dev.4
 
