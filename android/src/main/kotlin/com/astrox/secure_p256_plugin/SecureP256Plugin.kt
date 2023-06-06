@@ -101,7 +101,7 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
                 else -> result.notImplemented()
             }
         } catch (e: Throwable) {
-            result.error(e.javaClass.name, e.message, e.stackTrace.toString())
+            result.error(e.javaClass.name, e.message, e.stackTraceToString())
         }
     }
 
