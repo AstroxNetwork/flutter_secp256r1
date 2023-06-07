@@ -1,7 +1,7 @@
 name: secp256r1
 description: >
   A Flutter plugin that support secp256r1 by Keystore on Android and Secure Enclave on iOS.
-version: 0.1.0-dev.5
+version: 0.1.0-dev.6
 repository: https://github.com/AstroxNetwork/flutter_secp256r1
 
 environment:

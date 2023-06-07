@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.0-dev.6
+
+* Throw readable stack trace instead of describer on Android.
+
 ## 0.1.0-dev.5
 
 * Use `ConscryptProvider`.
