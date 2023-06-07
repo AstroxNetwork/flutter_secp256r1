@@ -138,6 +138,7 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
                 setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
                 setDigests(KeyProperties.DIGEST_SHA256)
                 if (hasStrongBox() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    // Not setting the strong box until we figure out if it's valid.
                     setIsStrongBoxBacked(true)
                 }
             }.build()
