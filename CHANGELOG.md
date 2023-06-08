@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.1.0-dev.7
+
+* Add `@Synchronized` and retries to Android methods.
+
 ## 0.1.0-dev.6
 
 * Throw readable stack trace instead of describer on Android.
