@@ -105,15 +105,6 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
-    private fun hasStrongBox(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            return applicationContext!!.packageManager.hasSystemFeature(
-                PackageManager.FEATURE_STRONGBOX_KEYSTORE
-            )
-        }
-        return false
-    }
-
     private fun getKeyPairFromAlias(alias: String, throwIfNotExists: Boolean = false): KeyPair {
         val ks: KeyStore = KeyStore.getInstance(storeProvider).apply { load(null) }
         val keyPair: KeyPair = if (ks.containsAlias(alias)) {
@@ -137,13 +128,23 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
             val parameterSpec = KeyGenParameterSpec.Builder(alias, properties).apply {
                 setAlgorithmParameterSpec(ECGenParameterSpec("secp256r1"))
                 setDigests(KeyProperties.DIGEST_SHA256)
-                if (hasStrongBox() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    setIsStrongBoxBacked(true)
-                }
+                // Not setting the strong box until we figure out if it's valid.
+                //if (hasStrongBox() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                //  setIsStrongBoxBacked(true)
+                //}
             }.build()
             kpg.initialize(parameterSpec)
             kpg.generateKeyPair()
         }
         return keyPair
     }
+
+//    private fun hasStrongBox(): Boolean {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+//            return applicationContext!!.packageManager.hasSystemFeature(
+//                PackageManager.FEATURE_STRONGBOX_KEYSTORE
+//            )
+//        }
+//        return false
+//    }
 }
