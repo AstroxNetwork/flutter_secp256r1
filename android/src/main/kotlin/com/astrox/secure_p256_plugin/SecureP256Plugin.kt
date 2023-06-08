@@ -162,18 +162,14 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
     }
 
     @Synchronized
-    private fun verify(
-        otherPublicKey: ByteArray,
-        payload: ByteArray,
-        otherSignature: ByteArray
-    ): Boolean {
+    private fun verify(publicKeyBytes: ByteArray, payload: ByteArray, signatureBytes: ByteArray): Boolean {
         val kf = KeyFactory.getInstance("EC")
-        val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(otherPublicKey)
-        val publicKey = kf.generatePublic(publicKeySpec)
+        val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(publicKeyBytes)
+        val key = kf.generatePublic(publicKeySpec)
         val signature = Signature.getInstance(signatureAlgorithm)
-        signature.initVerify(publicKey)
+        signature.initVerify(key)
         signature.update(payload)
-        return signature.verify(otherSignature)
+        return signature.verify(signatureBytes)
     }
 
     @Synchronized
