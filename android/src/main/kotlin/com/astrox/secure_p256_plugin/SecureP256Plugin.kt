@@ -1,7 +1,7 @@
 package com.astrox.secure_p256_plugin
 
 import android.content.Context
-import android.content.pm.PackageManager
+//import android.content.pm.PackageManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
@@ -57,27 +57,15 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
                 "sign" -> {
                     val cAlias = call.argument<String>("tag")!!
                     val payload = call.argument<ByteArray>("payload")!!
-                    val privateKey = getKeyPairFromAlias(cAlias, throwIfNotExists = true).private
-                    val signature = Signature.getInstance(signatureAlgorithm).run {
-                        initSign(privateKey)
-                        update(payload)
-                        sign()
-                    }
+                    val signature = sign(cAlias, payload)
                     result.success(signature)
                 }
 
                 "verify" -> {
-                    val cPayload = call.argument<ByteArray>("payload")!!
                     val cPublicKey = call.argument<ByteArray>("publicKey")!!
+                    val cPayload = call.argument<ByteArray>("payload")!!
                     val cSignature = call.argument<ByteArray>("signature")!!
-                    val verifyResult = Signature.getInstance(signatureAlgorithm).run {
-                        val kf = KeyFactory.getInstance("EC")
-                        val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(cPublicKey)
-                        val publicKey = kf.generatePublic(publicKeySpec)
-                        initVerify(publicKey)
-                        update(cPayload)
-                        verify(cSignature)
-                    }
+                    val verifyResult = verify(cPublicKey, cPayload, cSignature)
                     result.success(verifyResult)
                 }
 
@@ -88,14 +76,7 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
                     }
                     val cAlias = call.argument<String>("tag")!!
                     val cPublicKey = call.argument<ByteArray>("publicKey")!!
-                    val keyPair = getKeyPairFromAlias(cAlias, throwIfNotExists = true)
-                    val kf = KeyFactory.getInstance("EC")
-                    val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(cPublicKey)
-                    val publicKey = kf.generatePublic(publicKeySpec)
-                    val agreement = KeyAgreement.getInstance("ECDH", storeProvider)
-                    agreement.init(keyPair.private)
-                    agreement.doPhase(publicKey, true)
-                    val sharedSecret = agreement.generateSecret()
+                    val sharedSecret = ecdh(cAlias, cPublicKey)
                     result.success(sharedSecret)
                 }
 
@@ -106,19 +87,51 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
         }
     }
 
+    /**
+     * Obtain the keystore private key entry reference from the given key.
+     *
+     * Reading the private key data is invalid in the runtime, it's protected by the operating system.
+     *
+     * @param [alias] The key of which key should be obtained.
+     * @return The entry reference.
+     * @throws GeneralSecurityException If the key data could not be access by security reasons.
+     * @throws InvalidKeyException If the key data is unable to be read from the underlying provider.
+     * @throws TypeCastException If the entry is not [KeyStore.PrivateKeyEntry].
+     */
+    @Throws(GeneralSecurityException::class, InvalidKeyException::class, TypeCastException::class)
+    @Synchronized
+    private fun obtainPrivateKeyEntryFromAliasWithRetry(
+        alias: String,
+        keyStore: KeyStore? = null
+    ): KeyStore.PrivateKeyEntry {
+        val ks: KeyStore = keyStore ?: KeyStore.getInstance(storeProvider).apply { load(null) }
+        val entry = ks.getEntry(alias, null)
+        if (entry !is KeyStore.PrivateKeyEntry) {
+            throw TypeCastException()
+        }
+        return entry
+    }
+
+    private fun obtainPrivateKeyEntryFromAlias(alias: String, keyStore: KeyStore? = null): KeyStore.PrivateKeyEntry {
+        return try {
+            obtainPrivateKeyEntryFromAliasWithRetry(alias, keyStore)
+        } catch (ignored: InvalidKeyException) {
+            /** Retry when [InvalidKeyException] occurred. */
+            obtainPrivateKeyEntryFromAliasWithRetry(alias, keyStore)
+        }
+    }
+
+    @Throws(KeyStoreException::class)
+    @Synchronized
     private fun getKeyPairFromAlias(alias: String, throwIfNotExists: Boolean = false): KeyPair {
         val ks: KeyStore = KeyStore.getInstance(storeProvider).apply { load(null) }
         val keyPair: KeyPair = if (ks.containsAlias(alias)) {
-            val entry = ks.getEntry(alias, null)
-            if (entry !is KeyStore.PrivateKeyEntry) {
-                throw TypeCastException()
-            }
+            val entry = obtainPrivateKeyEntryFromAlias(alias, ks)
             KeyPair(entry.certificate.publicKey, entry.privateKey)
         } else if (throwIfNotExists) {
             throw KeyStoreException("No key was found with the alias $alias.")
         } else {
-            val kpg: KeyPairGenerator =
-                KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, storeProvider)
+            val kpg: KeyPairGenerator = KeyPairGenerator.getInstance(KeyProperties.KEY_ALGORITHM_EC, storeProvider)
             var properties = KeyProperties.PURPOSE_ENCRYPT or
                     KeyProperties.PURPOSE_DECRYPT or
                     KeyProperties.PURPOSE_SIGN or
@@ -138,6 +151,38 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
             kpg.generateKeyPair()
         }
         return keyPair
+    }
+
+    @Synchronized
+    private fun sign(alias: String, payload: ByteArray): ByteArray {
+        val privateKey = obtainPrivateKeyEntryFromAlias(alias).privateKey
+        val signature = Signature.getInstance(signatureAlgorithm)
+        signature.initSign(privateKey)
+        signature.update(payload)
+        return signature.sign()
+    }
+
+    @Synchronized
+    private fun verify(publicKeyBytes: ByteArray, payload: ByteArray, signatureBytes: ByteArray): Boolean {
+        val kf = KeyFactory.getInstance("EC")
+        val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(publicKeyBytes)
+        val key = kf.generatePublic(publicKeySpec)
+        val signature = Signature.getInstance(signatureAlgorithm)
+        signature.initVerify(key)
+        signature.update(payload)
+        return signature.verify(signatureBytes)
+    }
+
+    @Synchronized
+    private fun ecdh(alias: String, otherPublicKey: ByteArray): ByteArray {
+        val entry = obtainPrivateKeyEntryFromAlias(alias)
+        val kf = KeyFactory.getInstance("EC")
+        val publicKeySpec: EncodedKeySpec = X509EncodedKeySpec(otherPublicKey)
+        val publicKey = kf.generatePublic(publicKeySpec)
+        val agreement = KeyAgreement.getInstance("ECDH", storeProvider)
+        agreement.init(entry.privateKey)
+        agreement.doPhase(publicKey, true)
+        return agreement.generateSecret()
     }
 
 //    private fun hasStrongBox(): Boolean {
