@@ -50,5 +50,6 @@ android {
 dependencies {
     implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.10"))
     implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha06'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.68'
     implementation 'org.conscrypt:conscrypt-android:2.5.2'
 }

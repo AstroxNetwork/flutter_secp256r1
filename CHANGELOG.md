@@ -3,6 +3,7 @@
 ## 0.1.0-dev.7
 
 * Add `@Synchronized` and retries to Android methods.
+* Using `BouncyCastleProvider` as the first SecurityProvider.
 
 ## 0.1.0-dev.6
 

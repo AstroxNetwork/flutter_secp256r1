@@ -10,6 +10,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.conscrypt.Conscrypt
 import java.security.*
 import java.security.spec.ECGenParameterSpec
@@ -26,8 +27,8 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
     }
 
     init {
-        Security.removeProvider("BC")
-        Security.insertProviderAt(Conscrypt.newProvider(), 1)
+        Security.insertProviderAt(BouncyCastleProvider(), 1)
+        Security.addProvider(Conscrypt.newProvider())
     }
 
     private lateinit var channel: MethodChannel
