@@ -1,10 +1,10 @@
 package com.astrox.secure_p256_plugin
 
 import android.content.Context
-//import android.content.pm.PackageManager
 import android.os.Build
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.util.Base64
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -13,6 +13,7 @@ import io.flutter.plugin.common.MethodChannel.Result
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.conscrypt.Conscrypt
 import java.security.*
+import java.security.cert.Certificate
 import java.security.spec.ECGenParameterSpec
 import java.security.spec.EncodedKeySpec
 import java.security.spec.X509EncodedKeySpec
@@ -52,6 +53,12 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
                     val alias = call.argument<String>("tag")!!
                     val keyPair = getKeyPairFromAlias(alias)
                     result.success(keyPair.public.encoded)
+                }
+
+                "getCertificate" -> {
+                    val alias = call.argument<String>("tag")!!
+                    val certificate = getCertificate(alias)
+                    result.success(Base64.encodeToString(certificate.encoded, Base64.NO_WRAP))
                 }
 
                 "sign" -> {
@@ -183,6 +190,12 @@ class SecureP256Plugin : FlutterPlugin, MethodCallHandler {
         agreement.init(entry.privateKey)
         agreement.doPhase(publicKey, true)
         return agreement.generateSecret()
+    }
+
+    private fun getCertificate(alias: String): Certificate {
+        val ks: KeyStore = KeyStore.getInstance(storeProvider).apply { load(null) }
+        val entry = obtainPrivateKeyEntryFromAlias(alias, ks)
+        return entry.certificate as Certificate
     }
 
 //    private fun hasStrongBox(): Boolean {

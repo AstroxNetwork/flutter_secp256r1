@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:agent_dart/identity/p256.dart';
+import 'package:agent_dart/agent_dart.dart';
+import 'package:asn1lib/asn1lib.dart' as asn1lib;
 import 'package:convert/convert.dart';
 import 'package:flutter/material.dart';
-import 'package:secp256r1/secp256r1.dart';
 import 'package:tuple/tuple.dart';
+import 'package:x509/x509.dart' as x509;
+
+import 'package:secp256r1/secp256r1.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,7 +25,7 @@ class _MyAppState extends State<MyApp> {
   String _publicKey = 'Unknown';
   String _signed = 'Unknown';
   bool? _verified;
-  String? _sharedSecret, _decrypted;
+  String? _certificate, _sharedSecret, _decrypted;
   Tuple2<Uint8List, Uint8List>? _encrypted;
 
   final _payloadTEC = TextEditingController(text: 'Hello world');
@@ -42,6 +45,7 @@ class _MyAppState extends State<MyApp> {
         body: ListView(
           children: [
             SelectableText('getPublicKey: $_publicKey\n'),
+            SelectableText('certificate: $_certificate\n'),
             SelectableText('sign: $_signed\n'),
             SelectableText('verify: $_verified\n'),
             SelectableText('sharedSecret: $_sharedSecret\n'),
@@ -74,6 +78,19 @@ class _MyAppState extends State<MyApp> {
                 );
               },
               child: const Text('getPublicKey'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                SecureP256.getCertificate(alias).then(
+                  (r) => setState(() {
+                    final decoded = base64Decode(r.toString());
+                    final seq = asn1lib.ASN1Sequence.fromBytes(decoded);
+                    final cert = x509.X509Certificate.fromAsn1(seq);
+                    _certificate = cert.toString();
+                  }),
+                );
+              },
+              child: const Text('getCertificate'),
             ),
             ElevatedButton(
               onPressed: () {
