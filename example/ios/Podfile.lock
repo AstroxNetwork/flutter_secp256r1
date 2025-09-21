@@ -1,0 +1,28 @@
+PODS:
+  - agent_dart (1.0.0):
+    - Flutter
+  - Flutter (1.0.0)
+  - secp256r1 (1.0.0):
+    - Flutter
+
+DEPENDENCIES:
+  - agent_dart (from `.symlinks/plugins/agent_dart/ios`)
+  - Flutter (from `Flutter`)
+  - secp256r1 (from `.symlinks/plugins/secp256r1/ios`)
+
+EXTERNAL SOURCES:
+  agent_dart:
+    :path: ".symlinks/plugins/agent_dart/ios"
+  Flutter:
+    :path: Flutter
+  secp256r1:
+    :path: ".symlinks/plugins/secp256r1/ios"
+
+SPEC CHECKSUMS:
+  agent_dart: 0a02f15e81e2cd29ee559fa519aa368a529c453c
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  secp256r1: 6a8a5adc3d28d287b0ce118bf64f1f0a12508802
+
+PODFILE CHECKSUM: 8afc6a73a12e5b769d6b4d0395987ab5bef72ffa
+
+COCOAPODS: 1.16.2
