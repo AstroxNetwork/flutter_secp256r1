@@ -4,18 +4,18 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'secp256r1'
-  s.version          = '0.1.0'
-  s.summary          = 'A Flutter plugin that support secp256r1 by Secure Enclave,'
+  s.version          = '1.0.0'
+  s.summary          = 'Secure P256.'
   s.description      = <<-DESC
-A new Flutter plugin project.
+A Flutter plugin that support secp256r1 by Secure Enclave.
                        DESC
-  s.homepage         = 'https://astrox.me'
+  s.homepage         = 'https://github.com/AstroxNetwork/flutter_secp256r1'
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'AstroxNetwork' => 'dev@astrox.network' }
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.platform = :ios, '11.3'
+  s.platform = :ios, '12.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
