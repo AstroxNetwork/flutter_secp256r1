@@ -1,15 +1,14 @@
 group 'com.astrox.secure_p256_plugin'
-version '1.0-SNAPSHOT'
+version '1.0.0'
 
 buildscript {
-    ext.kotlin_version = '1.8.10'
+    ext.kotlin_version = '1.9.23'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.3.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -25,17 +24,19 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace 'com.astrox.secure_p256_plugin'
+    if (project.android.hasProperty('namespace')) {
+        namespace 'com.astrox.secure_p256_plugin'
+    }
 
-    compileSdkVersion 33
+    compileSdkVersion 36
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '11'
+        jvmTarget = '17'
     }
 
     sourceSets {
@@ -48,8 +49,8 @@ android {
 }
 
 dependencies {
-    implementation(platform("org.jetbrains.kotlin:kotlin-bom:1.8.10"))
-    implementation 'androidx.security:security-crypto-ktx:1.1.0-alpha06'
-    implementation 'org.bouncycastle:bcprov-jdk15on:1.68'
-    implementation 'org.conscrypt:conscrypt-android:2.5.2'
+    implementation(platform("org.jetbrains.kotlin:kotlin-bom:$kotlin_version"))
+    implementation 'androidx.security:security-crypto-ktx:1.1.0'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.70'
+    implementation 'org.conscrypt:conscrypt-android:2.5.3'
 }
